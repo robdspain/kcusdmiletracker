@@ -1,10 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const site1Select = document.getElementById('site1');
-    const site2Select = document.getElementById('site2');
+    const site1Input = document.getElementById('site1Input');
+    const site2Input = document.getElementById('site2Input');
+    const siteList1 = document.getElementById('siteList1');
+    const siteList2 = document.getElementById('siteList2');
     const calculateBtn = document.getElementById('calculateBtn');
     const distanceSpan = document.getElementById('distance');
+    const logContainer = document.getElementById('logContainer');
+    const clearLogBtn = document.getElementById('clearLogBtn');
 
-    // Mileage data (parsed from the provided table)
+    // Mileage data (remains the same)
     const mileageData = {
         "A.L. Conner": {"Alta": 8, "Citrus": 2, "District Op Ctr (DOC)": 12, "Dunlap/KCO Dunlap": 19, "ESC/SSC": 11, "Grant": 11, "Great Western": 10, "Jefferson": 11, "KCHS": 8, "KC Kids/ Lrng Ctr": 11, "Lincoln": 11, "McCord": 1, "Mtn View": 10, "Navelencia": 9, "OCHS": 2, "RHS/KCO/Adult": 11, "Riverview": 13, "RMCHS": 10, "Sheridan": 1, "Silas Bartsch": 10, "T.L. Reed": 11, "Transportation": 11, "Washington": 11},
         "Alta": {"A.L. Conner": 8, "Citrus": 6, "District Op Ctr (DOC)": 5, "Dunlap/KCO Dunlap": 27, "ESC/SSC": 4, "Grant": 4, "Great Western": 7, "Jefferson": 4, "KCHS": 3, "KC Kids/ Lrng Ctr": 4, "Lincoln": 3, "McCord": 7, "Mtn View": 3, "Navelencia": 6, "OCHS": 6, "RHS/KCO/Adult": 4, "Riverview": 6, "RMCHS": 4, "Sheridan": 6, "Silas Bartsch": 2, "T.L. Reed": 3, "Transportation": 4, "Washington": 4},
@@ -34,36 +38,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const siteNames = Object.keys(mileageData);
 
-    // Populate dropdowns
+    // Populate datalists
     siteNames.forEach(site => {
         const option1 = document.createElement('option');
         option1.value = site;
-        option1.textContent = site;
-        site1Select.appendChild(option1);
+        siteList1.appendChild(option1);
 
         const option2 = document.createElement('option');
         option2.value = site;
-        option2.textContent = site;
-        site2Select.appendChild(option2);
+        siteList2.appendChild(option2);
     });
 
-    // Add event listener to button
+    // Function to get initials from site name
+    function getInitials(siteName) {
+        if (!siteName) return '';
+        // Remove content in parentheses, replace '/' with space, split into words
+        const words = siteName.replace(/\(.*?\)/g, '').replace(/\//g, ' ').trim().split(/\s+/);
+        // Take the first letter of each word and join them
+        return words.map(word => word.charAt(0).toUpperCase()).join('');
+    }
+
+    // Add event listener to calculate button
     calculateBtn.addEventListener('click', () => {
-        const site1 = site1Select.value;
-        const site2 = site2Select.value;
+        const site1 = site1Input.value;
+        const site2 = site2Input.value;
         let distance = '--';
 
-        if (site1 && site2) {
+        // Basic validation: Check if the entered values are actual site names
+        if (siteNames.includes(site1) && siteNames.includes(site2)) {
             if (site1 === site2) {
                 distance = 0;
             } else if (mileageData[site1] && mileageData[site1][site2] !== undefined) {
                 distance = mileageData[site1][site2];
             } else if (mileageData[site2] && mileageData[site2][site1] !== undefined) {
-                // Check reverse lookup just in case data is not perfectly symmetrical
+                // Check reverse lookup
                 distance = mileageData[site2][site1];
             }
+
+            // Log the calculation if a valid distance was found
+            if (distance !== '--') {
+                const initials1 = getInitials(site1);
+                const initials2 = getInitials(site2);
+                const logMessage = `${initials1}-${initials2} - ${distance} miles`;
+
+                const logEntry = document.createElement('p');
+                logEntry.textContent = logMessage;
+                // Insert after the log header div
+                const logHeader = logContainer.querySelector('.log-header');
+                logHeader.parentNode.insertBefore(logEntry, logHeader.nextSibling);
+            }
+        } else {
+            // Handle invalid input (optional: show an error message)
+            console.warn("Invalid site name entered.");
+            distance = 'Invalid Input'; // Indicate error
         }
 
         distanceSpan.textContent = distance;
+    });
+
+    // Add event listener to clear log button
+    clearLogBtn.addEventListener('click', () => {
+        // Select all paragraph elements within the logContainer (excluding those in the header)
+        const logEntries = logContainer.querySelectorAll('p');
+        logEntries.forEach(entry => {
+            logContainer.removeChild(entry);
+        });
     });
 });

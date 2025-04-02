@@ -7,18 +7,38 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>KCUSD Mileage Calculator</h1>
-    <div class="calculator">
-        <label for="site1">Starting Site:</label>
-        <select id="site1" name="site1"></select>
+    <div class="container">
+        <h1>KCUSD Mileage Calculator</h1>
+        <div class="calculator">
+            <div class="input-group">
+                <label for="site1Input">Starting Site:</label>
+                <input type="text" id="site1Input" name="site1" list="siteList1" placeholder="Type or select a site...">
+                <datalist id="siteList1">
+                    <!-- Options will be populated by JavaScript -->
+                </datalist>
+            </div>
 
-        <label for="site2">Destination Site:</label>
-        <select id="site2" name="site2"></select>
+            <div class="input-group">
+                <label for="site2Input">Destination Site:</label>
+                <input type="text" id="site2Input" name="site2" list="siteList2" placeholder="Type or select a site...">
+                <datalist id="siteList2">
+                    <!-- Options will be populated by JavaScript -->
+                </datalist>
+            </div>
 
-        <button id="calculateBtn">Calculate Distance</button>
+            <button id="calculateBtn">Calculate Distance</button>
 
-        <div id="result">
-            <p>Distance: <span id="distance">--</span> miles</p>
+            <div id="result">
+                <p>Distance: <span id="distance">--</span> miles</p>
+            </div>
+        </div>
+
+        <div id="logContainer" class="log-section">
+             <div class="log-header">
+                <h2>Log</h2>
+                <button id="clearLogBtn">Clear Log</button>
+            </div>
+            <!-- Log entries will be added here -->
         </div>
     </div>
 
