@@ -142,6 +142,30 @@ button:active {
     word-wrap: break-word; /* Prevent long text overflow */
 }
 
+/* Totals Section */
+.log-totals {
+    margin-top: 25px; /* More space above */
+    padding: 20px 0 5px 0; /* More padding top, less bottom */
+    border-top: 2px solid #007bff; /* Thicker, colored border */
+    color: #333;
+}
+
+.log-totals p {
+    margin: 8px 0; /* More vertical space between total lines */
+    font-size: 1.1em; /* Slightly larger font */
+    font-weight: 500; /* Normal weight for label */
+    background-color: transparent;
+    border-left: none;
+    padding: 0;
+    display: flex; /* Align label and value */
+    justify-content: space-between; /* Push value to the right */
+}
+
+.log-totals span {
+    color: #0056b3;
+    font-weight: bold; /* Make the value bold */
+}
+
 /* Custom Autocomplete Results List */
 .results-list {
     display: none; /* Hidden by default */
