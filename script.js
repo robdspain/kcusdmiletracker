@@ -5,8 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultsList2 = document.getElementById('resultsList2');
     const calculateBtn = document.getElementById('calculateBtn');
     const distanceSpan = document.getElementById('distance');
-    const logContainer = document.getElementById('logContainer');
+    const logContainer = document.getElementById('logContainer'); // Main container for log section
+    const logEntriesContainer = document.getElementById('logEntries'); // Container for individual log <p> tags
     const clearLogBtn = document.getElementById('clearLogBtn');
+    const totalMilesSpan = document.getElementById('totalMiles');
+    const totalReimbursementSpan = document.getElementById('totalReimbursement');
 
     // Mileage data (remains the same)
     const mileageData = {
@@ -37,7 +40,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 const siteNames = Object.keys(mileageData);
 
-// Mapping from full site names to desired codes for logging
+const IRS_RATE_2025 = 0.685;
+let currentTotalMiles = 0.0;
+
+// Function to update the totals display
+function updateTotalsDisplay() {
+    totalMilesSpan.textContent = currentTotalMiles.toFixed(1); // Keep one decimal place for miles
+    const reimbursement = currentTotalMiles * IRS_RATE_2025;
+    totalReimbursementSpan.textContent = reimbursement.toFixed(2); // Two decimal places for currency
+}
+
+const IRS_RATE_2025 = 0.685;
+let currentTotalMiles = 0.0;
+
+// Function to update the totals display
+function updateTotalsDisplay() {
+    totalMilesSpan.textContent = currentTotalMiles.toFixed(1); // Keep one decimal place for miles
+    const reimbursement = currentTotalMiles * IRS_RATE_2025;
+    totalReimbursementSpan.textContent = reimbursement.toFixed(2); // Two decimal places for currency
+}
+
 const siteCodes = {
     "A.L. Conner": "ALC",
     "Alta": "Alta",
@@ -151,8 +173,11 @@ const siteCodes = {
 
                 const logEntry = document.createElement('p');
                 logEntry.textContent = logMessage;
-                const logHeader = logContainer.querySelector('.log-header');
-                logHeader.parentNode.insertBefore(logEntry, logHeader.nextSibling);
+                logEntriesContainer.insertBefore(logEntry, logEntriesContainer.firstChild); // Prepend to logEntries div
+
+                // Add distance to total and update display
+                currentTotalMiles += Number(distance); // Ensure distance is treated as a number
+                updateTotalsDisplay();
             }
         } else {
             console.warn("Invalid site name entered for calculation.");
@@ -164,9 +189,14 @@ const siteCodes = {
 
     // Add event listener to clear log button
     clearLogBtn.addEventListener('click', () => {
-        const logEntries = logContainer.querySelectorAll('p');
-        logEntries.forEach(entry => {
-            logContainer.removeChild(entry);
-        });
+        // Clear the visual log entries
+        logEntriesContainer.innerHTML = '';
+
+        // Reset the total miles and update the display
+        currentTotalMiles = 0.0;
+        updateTotalsDisplay();
     });
 });
+
+// Initial call to set totals display to 0
+updateTotalsDisplay();

@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KCUSD Mileage Calculator</title>
+    <title>Mileage Calculator</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>KCUSD Mileage Calculator</h1>
+        <h1>Mileage Calculator</h1>
         <div class="calculator">
             <div class="input-group">
                 <label for="site1Input">Starting Site:</label>
@@ -36,7 +36,13 @@
                 <h2>Log</h2>
                 <button id="clearLogBtn">Clear Log</button>
             </div>
-            <!-- Log entries will be added here -->
+            <div id="logEntries">
+                <!-- Log entries will be added here -->
+            </div>
+            <div id="totals" class="log-totals">
+                <p>Total Miles: <span id="totalMiles">0.0</span></p>
+                <p>Est. Reimbursement (@ $0.685/mile): $<span id="totalReimbursement">0.00</span></p>
+            </div>
         </div>
     </div>
 
