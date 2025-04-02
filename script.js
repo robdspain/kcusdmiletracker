@@ -35,8 +35,36 @@ document.addEventListener('DOMContentLoaded', () => {
         "Transportation": {"A.L. Conner": 11, "Alta": 4, "Citrus": 8, "District Op Ctr (DOC)": 1, "Dunlap/KCO Dunlap": 29, "ESC/SSC": 1, "Grant": 2, "Great Western": 7, "Jefferson": 1, "KCHS": 3, "KC Kids/ Lrng Ctr": 1, "Lincoln": 2, "McCord": 9, "Mtn View": 2, "Navelencia": 9, "OCHS": 8, "RHS/KCO/Adult": 3, "Riverview": 4, "RMCHS": 3, "Sheridan": 9, "Silas Bartsch": 1, "T.L. Reed": 2, "Washington": 2},
         "Washington": {"A.L. Conner": 11, "Alta": 4, "Citrus": 9, "District Op Ctr (DOC)": 0.5, "Dunlap/KCO Dunlap": 30, "ESC/SSC": 1, "Grant": 1, "Great Western": 6, "Jefferson": 1, "KCHS": 5, "KC Kids/ Lrng Ctr": 1, "Lincoln": 1, "McCord": 10, "Mtn View": 1, "Navelencia": 11, "OCHS": 9, "RHS/KCO/Adult": 1, "Riverview": 3, "RMCHS": 1, "Sheridan": 9, "Silas Bartsch": 3, "T.L. Reed": 2, "Transportation": 2}
     };
+const siteNames = Object.keys(mileageData);
 
-    const siteNames = Object.keys(mileageData);
+// Mapping from full site names to desired codes for logging
+const siteCodes = {
+    "A.L. Conner": "ALC",
+    "Alta": "Alta",
+    "Citrus": "Citrus",
+    "District Op Ctr (DOC)": "DOC",
+    "Dunlap/KCO Dunlap": "Dunlap/KCO Dunlap",
+    "ESC/SSC": "ESC/SSC",
+    "Grant": "Grant",
+    "Great Western": "GW",
+    "Jefferson": "Jefferson",
+    "KCHS": "KCHS",
+    "KC Kids/ Lrng Ctr": "KC Kids/Lrng Ctr",
+    "Lincoln": "Lincoln",
+    "McCord": "McCord",
+    "Mtn View": "Mtn View",
+    "Navelencia": "Navel",
+    "OCHS": "OCHS",
+    "RHS/KCO/Adult": "RHS/KCO/Adult",
+    "Riverview": "Riverview",
+    "RMCHS": "RMCHS",
+    "Sheridan": "Sheridan",
+    "Silas Bartsch": "Silas Bartsch",
+    "T.L. Reed": "TL Reed",
+    "Transportation": "Transportation",
+    "Washington": "Washington"
+};
+
 
     // --- Autocomplete Logic ---
     function setupAutocomplete(inputEl, resultsEl) {
@@ -98,13 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- End Autocomplete Logic ---
 
 
-    // Function to get initials from site name
-    function getInitials(siteName) {
-        if (!siteName) return '';
-        const words = siteName.replace(/\(.*?\)/g, '').replace(/\//g, ' ').trim().split(/\s+/);
-        return words.map(word => word.charAt(0).toUpperCase()).join('');
-    }
-
     // Add event listener to calculate button
     calculateBtn.addEventListener('click', () => {
         const site1 = site1Input.value; // Use input value
@@ -121,10 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 distance = mileageData[site2][site1];
             }
 
+            // Log the calculation if a valid distance was found
             if (distance !== '--') {
-                const initials1 = getInitials(site1);
-                const initials2 = getInitials(site2);
-                const logMessage = `${initials1}-${initials2} - ${distance} miles`;
+                // Use predefined codes instead of initials
+                const code1 = siteCodes[site1] || site1; // Fallback to full name if code not found
+                const code2 = siteCodes[site2] || site2; // Fallback to full name if code not found
+                const logMessage = `${code1}-${code2} - ${distance} miles`;
 
                 const logEntry = document.createElement('p');
                 logEntry.textContent = logMessage;
