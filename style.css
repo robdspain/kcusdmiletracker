@@ -42,6 +42,7 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    position: relative; /* Needed for absolute positioning of results */
 }
 
 label {
@@ -139,4 +140,36 @@ button:active {
     font-size: 0.95em;
     border-left: 3px solid #007bff;
     word-wrap: break-word; /* Prevent long text overflow */
+}
+
+/* Custom Autocomplete Results List */
+.results-list {
+    display: none; /* Hidden by default */
+    position: absolute;
+    top: 100%; /* Position below the input group */
+    left: 0;
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-top: none; /* Avoid double border with input */
+    border-radius: 0 0 5px 5px;
+    max-height: 200px; /* Limit height and enable scroll */
+    overflow-y: auto;
+    z-index: 10; /* Ensure it's above other elements */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.results-list div {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+.results-list div:hover {
+    background-color: #f0f0f0;
+}
+
+.results-list div.selected { /* Optional: style for selected item */
+    background-color: #007bff;
+    color: white;
 }

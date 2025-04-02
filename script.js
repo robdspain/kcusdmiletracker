@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const site1Input = document.getElementById('site1Input');
     const site2Input = document.getElementById('site2Input');
-    const siteList1 = document.getElementById('siteList1');
-    const siteList2 = document.getElementById('siteList2');
+    const resultsList1 = document.getElementById('resultsList1');
+    const resultsList2 = document.getElementById('resultsList2');
     const calculateBtn = document.getElementById('calculateBtn');
     const distanceSpan = document.getElementById('distance');
     const logContainer = document.getElementById('logContainer');
@@ -38,44 +38,89 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const siteNames = Object.keys(mileageData);
 
-    // Populate datalists
-    siteNames.forEach(site => {
-        const option1 = document.createElement('option');
-        option1.value = site;
-        siteList1.appendChild(option1);
+    // --- Autocomplete Logic ---
+    function setupAutocomplete(inputEl, resultsEl) {
+        inputEl.addEventListener('input', () => {
+            const inputText = inputEl.value.toLowerCase();
+            resultsEl.innerHTML = ''; // Clear previous results
+            resultsEl.style.display = 'none'; // Hide by default
 
-        const option2 = document.createElement('option');
-        option2.value = site;
-        siteList2.appendChild(option2);
-    });
+            if (inputText.length === 0) {
+                return; // Don't show list if input is empty
+            }
+
+            const filteredSites = siteNames.filter(site =>
+                site.toLowerCase().includes(inputText)
+            );
+
+            if (filteredSites.length > 0) {
+                filteredSites.forEach(site => {
+                    const div = document.createElement('div');
+                    div.textContent = site;
+                    div.addEventListener('click', () => {
+                        inputEl.value = site; // Set input value on click
+                        resultsEl.innerHTML = ''; // Clear results
+                        resultsEl.style.display = 'none'; // Hide list
+                    });
+                    resultsEl.appendChild(div);
+                });
+                resultsEl.style.display = 'block'; // Show results list
+            }
+        });
+
+        // Hide results when clicking outside
+        document.addEventListener('click', (event) => {
+            if (!inputEl.contains(event.target) && !resultsEl.contains(event.target)) {
+                resultsEl.style.display = 'none';
+            }
+        });
+
+         // Optional: Hide results on blur, but with a delay to allow clicks
+         inputEl.addEventListener('blur', () => {
+            setTimeout(() => {
+                 if (!resultsEl.matches(':hover')) { // Hide only if mouse isn't over the results
+                     resultsEl.style.display = 'none';
+                 }
+            }, 150); // Delay in ms
+         });
+
+         // Show list on focus if there's already text
+         inputEl.addEventListener('focus', () => {
+             if (inputEl.value.length > 0) {
+                 // Trigger input event handler to potentially show list
+                 inputEl.dispatchEvent(new Event('input'));
+             }
+         });
+    }
+
+    setupAutocomplete(site1Input, resultsList1);
+    setupAutocomplete(site2Input, resultsList2);
+    // --- End Autocomplete Logic ---
+
 
     // Function to get initials from site name
     function getInitials(siteName) {
         if (!siteName) return '';
-        // Remove content in parentheses, replace '/' with space, split into words
         const words = siteName.replace(/\(.*?\)/g, '').replace(/\//g, ' ').trim().split(/\s+/);
-        // Take the first letter of each word and join them
         return words.map(word => word.charAt(0).toUpperCase()).join('');
     }
 
     // Add event listener to calculate button
     calculateBtn.addEventListener('click', () => {
-        const site1 = site1Input.value;
-        const site2 = site2Input.value;
+        const site1 = site1Input.value; // Use input value
+        const site2 = site2Input.value; // Use input value
         let distance = '--';
 
-        // Basic validation: Check if the entered values are actual site names
+        // Validate that the entered values are actual site names
         if (siteNames.includes(site1) && siteNames.includes(site2)) {
             if (site1 === site2) {
                 distance = 0;
             } else if (mileageData[site1] && mileageData[site1][site2] !== undefined) {
                 distance = mileageData[site1][site2];
             } else if (mileageData[site2] && mileageData[site2][site1] !== undefined) {
-                // Check reverse lookup
                 distance = mileageData[site2][site1];
             }
 
-            // Log the calculation if a valid distance was found
             if (distance !== '--') {
                 const initials1 = getInitials(site1);
                 const initials2 = getInitials(site2);
@@ -83,14 +128,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const logEntry = document.createElement('p');
                 logEntry.textContent = logMessage;
-                // Insert after the log header div
                 const logHeader = logContainer.querySelector('.log-header');
                 logHeader.parentNode.insertBefore(logEntry, logHeader.nextSibling);
             }
         } else {
-            // Handle invalid input (optional: show an error message)
-            console.warn("Invalid site name entered.");
-            distance = 'Invalid Input'; // Indicate error
+            console.warn("Invalid site name entered for calculation.");
+            distance = 'Invalid Input';
         }
 
         distanceSpan.textContent = distance;
@@ -98,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add event listener to clear log button
     clearLogBtn.addEventListener('click', () => {
-        // Select all paragraph elements within the logContainer (excluding those in the header)
         const logEntries = logContainer.querySelectorAll('p');
         logEntries.forEach(entry => {
             logContainer.removeChild(entry);

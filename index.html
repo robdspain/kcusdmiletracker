@@ -12,17 +12,15 @@
         <div class="calculator">
             <div class="input-group">
                 <label for="site1Input">Starting Site:</label>
-                <input type="text" id="site1Input" name="site1" list="siteList1" placeholder="Type or select a site...">
-                <datalist id="siteList1">
-                    <!-- Options will be populated by JavaScript -->
+                <input type="text" id="site1Input" name="site1" placeholder="Type or select a site..." autocomplete="off">
+                <div class="results-list" id="resultsList1"></div> <!-- Custom results container -->
                 </datalist>
             </div>
 
             <div class="input-group">
                 <label for="site2Input">Destination Site:</label>
-                <input type="text" id="site2Input" name="site2" list="siteList2" placeholder="Type or select a site...">
-                <datalist id="siteList2">
-                    <!-- Options will be populated by JavaScript -->
+                <input type="text" id="site2Input" name="site2" placeholder="Type or select a site..." autocomplete="off">
+                <div class="results-list" id="resultsList2"></div> <!-- Custom results container -->
                 </datalist>
             </div>
 
