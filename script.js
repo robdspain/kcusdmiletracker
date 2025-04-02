@@ -50,16 +50,6 @@ function updateTotalsDisplay() {
     totalReimbursementSpan.textContent = reimbursement.toFixed(2); // Two decimal places for currency
 }
 
-const IRS_RATE_2025 = 0.685;
-let currentTotalMiles = 0.0;
-
-// Function to update the totals display
-function updateTotalsDisplay() {
-    totalMilesSpan.textContent = currentTotalMiles.toFixed(1); // Keep one decimal place for miles
-    const reimbursement = currentTotalMiles * IRS_RATE_2025;
-    totalReimbursementSpan.textContent = reimbursement.toFixed(2); // Two decimal places for currency
-}
-
 const siteCodes = {
     "A.L. Conner": "ALC",
     "Alta": "Alta",
