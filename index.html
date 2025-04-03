@@ -16,15 +16,24 @@
                 <div class="results-list" id="resultsList1"></div> <!-- Custom results container -->
                 </datalist>
             </div>
+</div>
 
+<div class="input-group">
             <div class="input-group">
                 <label for="site2Input">Destination Site:</label>
                 <input type="text" id="site2Input" name="site2" placeholder="Type or select a site..." autocomplete="off">
                 <div class="results-list" id="resultsList2"></div> <!-- Custom results container -->
                 </datalist>
             </div>
+            <button id="swapBtn" class="swap-button">⇅</button> <!-- Swap Button Moved Here -->
 
-            <button id="calculateBtn">Calculate Distance</button>
+            <div class="date-controls">
+                <label for="dateInput">Date:</label>
+                <input type="date" id="dateInput">
+                <button id="nextDayBtn">Next Day (Skip Weekends)</button>
+            </div>
+
+            <button id="logTripBtn">Log Trip</button> <!-- Add Log Trip Button -->
 
             <div id="result">
                 <p>Distance: <span id="distance">--</span> miles</p>
@@ -34,6 +43,7 @@
         <div id="logContainer" class="log-section">
              <div class="log-header">
                 <h2>Log</h2>
+                <button id="copyLogBtn">Copy Log (MD)</button> <!-- New Button -->
                 <button id="clearLogBtn">Clear Log</button>
             </div>
             <div id="logEntries">

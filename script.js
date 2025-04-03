@@ -3,14 +3,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const site2Input = document.getElementById('site2Input');
     const resultsList1 = document.getElementById('resultsList1');
     const resultsList2 = document.getElementById('resultsList2');
-    const calculateBtn = document.getElementById('calculateBtn');
     const distanceSpan = document.getElementById('distance');
     const logContainer = document.getElementById('logContainer'); // Main container for log section
     const logEntriesContainer = document.getElementById('logEntries'); // Container for individual log <p> tags
     const clearLogBtn = document.getElementById('clearLogBtn');
     const totalMilesSpan = document.getElementById('totalMiles');
     const totalReimbursementSpan = document.getElementById('totalReimbursement');
-
+    const swapBtn = document.getElementById('swapBtn'); // Get the swap button
+    const dateInput = document.getElementById('dateInput'); // Get the date input
+    const nextDayBtn = document.getElementById('nextDayBtn'); // Get the next day button
+    const logTripBtn = document.getElementById('logTripBtn'); // Get the log trip button
+    const copyLogBtn = document.getElementById('copyLogBtn'); // Get the copy log button
     // Mileage data with "KC Kids/ Learning Center" updated
     const mileageData = {
         "A.L. Conner": {"Alta": 8, "Citrus": 2, "District Op Ctr (DOC)": 12, "Dunlap/KCO Dunlap": 19, "ESC/SSC": 11, "Grant": 11, "Great Western": 10, "Jefferson": 11, "KCHS": 8, "KC Kids/ Learning Center": 11, "Lincoln": 11, "McCord": 1, "Mtn View": 10, "Navelencia": 9, "OCHS": 2, "RHS/KCO/Adult": 11, "Riverview": 13, "RMCHS": 10, "Sheridan": 1, "Silas Bartsch": 10, "T.L. Reed": 11, "Transportation": 11, "Washington": 11},
@@ -43,6 +46,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const IRS_RATE_2025 = 0.685;
     let currentTotalMiles = 0.0;
+    let currentLoggableTrip = null; // Holds details {date, code1, code2, distance} for the currently displayed valid trip
+
+    // --- Date Helper Functions ---
+    // Formats a Date object as MM/DD/YY
+    function formatDate(date) {
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const year = date.getFullYear().toString().slice(-2); // Get last two digits of year
+        return `${month}/${day}/${year}`;
+    }
+
+    // Formats a Date object as YYYY-MM-DD for the date input value
+    function formatDateForInput(date) {
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        const year = date.getFullYear();
+        return `${year}-${month}-${day}`;
+    }
+    // --- End Date Helper Functions ---
 
     // Function to update the totals display
     function updateTotalsDisplay() {
@@ -104,6 +126,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         inputEl.value = site; // Set input value on click
                         resultsEl.innerHTML = ''; // Clear results
                         resultsEl.style.display = 'none'; // Hide list
+                        // Trigger change event AFTER setting value to ensure calculation uses the new value
+                        inputEl.dispatchEvent(new Event('change', { bubbles: true }));
                     });
                     resultsEl.appendChild(div);
                 });
@@ -140,45 +164,90 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAutocomplete(site2Input, resultsList2);
     // --- End Autocomplete Logic ---
 
+    // --- Automatic Distance Display Update ---
+    function updateDistanceDisplay() {
+        const site1 = site1Input.value;
+        const site2 = site2Input.value;
+        let distance = '--'; // Default display value
+        currentLoggableTrip = null; // Reset loggable trip info by default
 
-    // Add event listener to calculate button
-    calculateBtn.addEventListener('click', () => {
-        const site1 = site1Input.value; // Use input value
-        const site2 = site2Input.value; // Use input value
-        let distance = '--';
-
-        // Validate that the entered values are actual site names from the updated list
+        // Only proceed if both inputs contain valid site names recognized by the system
         if (siteNames.includes(site1) && siteNames.includes(site2)) {
             if (site1 === site2) {
                 distance = 0;
             } else if (mileageData[site1] && mileageData[site1][site2] !== undefined) {
                 distance = mileageData[site1][site2];
             } else if (mileageData[site2] && mileageData[site2][site1] !== undefined) {
-                distance = mileageData[site2][site1];
+                distance = mileageData[site2][site1]; // Check reverse
+            } else {
+                 // This case should ideally not be reached if siteNames.includes check is robust
+                 console.error("Mileage data missing for valid sites:", site1, site2);
+                 distance = 'Error';
             }
 
-            // Log the calculation if a valid distance was found
-            if (distance !== '--') {
-                // Use predefined codes instead of initials
-                const code1 = siteCodes[site1] || site1; // Fallback to full name if code not found
-                const code2 = siteCodes[site2] || site2; // Fallback to full name if code not found
-                const logMessage = `${code1}-${code2} - ${distance} miles`;
-
-                const logEntry = document.createElement('p');
-                logEntry.textContent = logMessage;
-                logEntriesContainer.insertBefore(logEntry, logEntriesContainer.firstChild); // Prepend to logEntries div
-
-                // Add distance to total and update display
-                currentTotalMiles += Number(distance); // Ensure distance is treated as a number
-                updateTotalsDisplay();
+            // If a valid numerical distance > 0 was found, store details for potential logging
+            if (typeof distance === 'number' && distance > 0) {
+                const code1 = siteCodes[site1] || site1;
+                const code2 = siteCodes[site2] || site2;
+                const currentDateValue = dateInput.value;
+                let formattedDate = 'N/A';
+                if (currentDateValue) {
+                    const currentDate = new Date(currentDateValue + 'T00:00:00');
+                    if (!isNaN(currentDate)) {
+                        formattedDate = formatDate(currentDate);
+                    }
+                }
+                // Store the details needed for logging
+                currentLoggableTrip = {
+                    date: formattedDate,
+                    code1: code1,
+                    code2: code2,
+                    distance: distance
+                };
             }
         } else {
-            console.warn("Invalid site name entered for calculation.");
-            distance = 'Invalid Input';
+            // If one or both inputs are not valid site names, reset distance display
+            distance = '--';
         }
 
+        // Update the distance display regardless of logging success
+        // Show '0' if sites are the same, '--' if invalid/incomplete, or the calculated distance/Error
         distanceSpan.textContent = distance;
+    }
+
+    // Add event listeners to trigger display update when input values change
+    site1Input.addEventListener('change', updateDistanceDisplay);
+    site2Input.addEventListener('change', updateDistanceDisplay);
+    // --- End Automatic Distance Display Update ---
+
+    // --- Manual Trip Logging ---
+    logTripBtn.addEventListener('click', () => {
+        if (currentLoggableTrip) {
+            const { date, code1, code2, distance } = currentLoggableTrip;
+            const logMessage = `${date} - ${code1}-${code2} - ${distance} miles`;
+
+            // Check if this exact log entry already exists as the most recent one
+            const firstLogEntry = logEntriesContainer.firstChild;
+            if (!firstLogEntry || firstLogEntry.textContent !== logMessage) {
+                const logEntry = document.createElement('p');
+                logEntry.textContent = logMessage;
+                logEntriesContainer.insertBefore(logEntry, logEntriesContainer.firstChild);
+
+                currentTotalMiles += Number(distance);
+                updateTotalsDisplay();
+
+                // Clear the stored trip after logging to prevent accidental double-logging
+                currentLoggableTrip = null;
+            } else {
+                console.log("Duplicate log entry prevented (manual log):", logMessage);
+                // Optionally provide user feedback here (e.g., flash the button red)
+            }
+        } else {
+            console.log("Log Trip button clicked, but no valid trip data to log.");
+            // Optionally provide user feedback (e.g., shake the button)
+        }
     });
+    // --- End Manual Trip Logging ---
 
     // Add event listener to clear log button
     clearLogBtn.addEventListener('click', () => {
@@ -189,7 +258,111 @@ document.addEventListener('DOMContentLoaded', () => {
         currentTotalMiles = 0.0;
         updateTotalsDisplay();
     });
-});
 
-// Initial call to set totals display to 0
-updateTotalsDisplay();
+    // Add event listener for the swap button
+    swapBtn.addEventListener('click', () => {
+        const tempValue = site1Input.value;
+        site1Input.value = site2Input.value;
+        site2Input.value = tempValue;
+
+        // Optional: Clear any autocomplete suggestions after swapping
+        resultsList1.innerHTML = '';
+        resultsList1.style.display = 'none';
+        resultsList2.innerHTML = '';
+        resultsList2.style.display = 'none';
+
+        // Trigger display update after swapping
+        updateDistanceDisplay();
+    });
+
+    // Add event listener for the next day button
+    nextDayBtn.addEventListener('click', () => {
+        const currentDateValue = dateInput.value;
+        if (!currentDateValue) {
+            console.warn("Date input is empty.");
+            // Optionally set to today if empty
+            // setDateValue(new Date());
+            return;
+        }
+
+        // Add T00:00:00 to ensure parsing happens in local time zone consistently
+        let nextDate = new Date(currentDateValue + 'T00:00:00');
+        if (isNaN(nextDate)) {
+            console.error("Invalid date in input field.");
+            // Optionally reset to today
+            // setDateValue(new Date());
+            return;
+        }
+
+        do {
+            nextDate.setDate(nextDate.getDate() + 1); // Increment the day
+            // getDay() returns 0 for Sunday, 6 for Saturday
+        } while (nextDate.getDay() === 0 || nextDate.getDay() === 6);
+
+        dateInput.value = formatDateForInput(nextDate); // Update the input field
+        // Also update the display in case the date change affects loggable trip details (though it shouldn't directly)
+        updateDistanceDisplay();
+    });
+
+    // --- Copy Log as Markdown ---
+    copyLogBtn.addEventListener('click', () => {
+        const logEntries = logEntriesContainer.querySelectorAll('p');
+        if (logEntries.length === 0) {
+            alert("Log is empty. Nothing to copy.");
+            return;
+        }
+
+        let markdownString = "| Date     | Route       | Miles |\n";
+        markdownString +=    "|----------|-------------|-------|\n";
+
+        // Iterate in reverse order to get chronological order (since entries are prepended)
+        const reversedEntries = Array.from(logEntries).reverse();
+
+        reversedEntries.forEach(entry => {
+            const text = entry.textContent;
+            // Example format: "04/03/25 - ALC-Alta - 8 miles"
+            const parts = text.split(' - ');
+            if (parts.length === 3) {
+                const date = parts[0].trim();
+                const route = parts[1].trim();
+                const miles = parts[2].replace(' miles', '').trim();
+                markdownString += `| ${date} | ${route} | ${miles} |\n`;
+            } else {
+                console.warn("Could not parse log entry:", text);
+            }
+        });
+
+        // Add totals row
+        const totalMiles = totalMilesSpan.textContent;
+        const totalReimbursement = totalReimbursementSpan.textContent;
+        markdownString += `| **Total** |             | **${totalMiles}** |\n`;
+        markdownString += `| **Est. Reimbursement ($${IRS_RATE_2025}/mile)** | | **$${totalReimbursement}** |\n`;
+
+
+        navigator.clipboard.writeText(markdownString)
+            .then(() => {
+                // Optional: Provide feedback to the user
+                const originalText = copyLogBtn.textContent;
+                copyLogBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyLogBtn.textContent = originalText;
+                }, 1500); // Reset text after 1.5 seconds
+            })
+            .catch(err => {
+                console.error('Failed to copy log to clipboard: ', err);
+                alert('Failed to copy log. See console for details.');
+            });
+    });
+    // --- End Copy Log as Markdown ---
+
+
+    // --- Initialization ---
+    // Set initial date to today
+    dateInput.value = formatDateForInput(new Date());
+
+    // Initial call to set totals display to 0
+    updateTotalsDisplay();
+    distanceSpan.textContent = '--'; // Ensure distance display starts as '--'
+    // --- End Initialization ---
+
+});
