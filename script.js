@@ -405,7 +405,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const reversedEntries = Array.from(logEntries).reverse();
 
         reversedEntries.forEach(entry => {
-            const text = entry.textContent;
+            const textSpan = entry.querySelector('.log-entry-text'); // Find the span within the paragraph
+            const text = textSpan ? textSpan.textContent : ''; // Get text only from the span
             // Example format: "04/03/25 - ALC-Alta - 8 miles"
             const parts = text.split(' - ');
             if (parts.length === 3) {
