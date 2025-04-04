@@ -356,6 +356,26 @@ button.edit-log-btn:hover {
     border-color: var(--secondary-hover-color);
 }
 
+/* Delete Button Styling */
+button.delete-log-btn {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    background-color: var(--danger-color); /* Use destructive color */
+    border-color: var(--danger-color);
+    color: hsl(var(--destructive-foreground)); /* Near White */
+    border-radius: var(--radius);
+    cursor: pointer;
+    flex-shrink: 0;
+    width: auto;
+    height: auto;
+    margin-left: 5px; /* Add space between edit and delete */
+}
+
+button.delete-log-btn:hover {
+    background-color: var(--danger-hover-color); /* Darker destructive color */
+    border-color: var(--danger-hover-color);
+}
+
 /* Totals Section */
 .log-totals {
     margin-top: 20px;

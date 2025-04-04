@@ -255,8 +255,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 editButton.classList.add('edit-log-btn'); // Add class for styling/selection
                 editButton.addEventListener('click', () => handleEditLogEntry(logEntry));
 
+                // Create Delete button
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.classList.add('delete-log-btn'); // Add class for styling/selection
+                deleteButton.addEventListener('click', () => handleDeleteLogEntry(logEntry));
+
                 logEntry.appendChild(textSpan);
                 logEntry.appendChild(editButton);
+                logEntry.appendChild(deleteButton); // Add the delete button
 
                 // Find the correct insertion point based on date
                 const existingEntries = logEntriesContainer.querySelectorAll('p');
@@ -336,6 +343,25 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     // --- End Edit Log Entry Logic ---
+
+    // --- Delete Log Entry Logic ---
+    function handleDeleteLogEntry(logEntryElement) {
+        const { distance: distanceStr } = logEntryElement.dataset;
+        const distance = Number(distanceStr);
+
+        if (isNaN(distance)) {
+            console.error("Invalid distance found in log entry dataset for deletion:", distanceStr);
+            return;
+        }
+
+        // 1. Subtract from totals
+        currentTotalMiles -= distance;
+        updateTotalsDisplay();
+
+        // 2. Remove the entry from the display
+        logEntryElement.remove();
+    }
+    // --- End Delete Log Entry Logic ---
 
     // Add event listener to clear log button
     clearLogBtn.addEventListener('click', () => {
