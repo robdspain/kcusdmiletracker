@@ -308,10 +308,37 @@ button:active {
     border-radius: var(--border-radius);
     font-size: 0.875rem;
     border: 1px solid var(--border-color); /* Lighter Gray */
-    word-wrap: break-word;
     color: hsl(var(--card-foreground)); /* Black */
     line-height: 1.4;
     box-shadow: none;
+    display: flex; /* Use flexbox to align text and button */
+    justify-content: space-between; /* Push button to the right */
+    align-items: center; /* Vertically align items */
+    gap: 10px; /* Add space between text and button */
+}
+
+.log-entry-text {
+    word-wrap: break-word; /* Allow text to wrap */
+    flex-grow: 1; /* Allow text to take available space */
+}
+
+button.edit-log-btn {
+    /* Basic styling for edit button */
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: hsl(var(--secondary-foreground));
+    border-radius: var(--radius);
+    cursor: pointer;
+    flex-shrink: 0; /* Prevent button from shrinking */
+    width: auto; /* Allow button to size to content */
+    height: auto; /* Override default button height */
+}
+
+button.edit-log-btn:hover {
+    background-color: var(--secondary-hover-color);
+    border-color: var(--secondary-hover-color);
 }
 
 /* Totals Section */

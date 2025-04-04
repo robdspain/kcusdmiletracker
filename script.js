@@ -101,6 +101,12 @@ document.addEventListener('DOMContentLoaded', () => {
         "Washington": "Washington"
     };
 
+    // Create a reverse mapping from code to full site name for editing
+    const codeToSiteName = Object.entries(siteCodes).reduce((acc, [name, code]) => {
+        acc[code] = name;
+        return acc;
+    }, {});
+
 
     // --- Autocomplete Logic ---
     function setupAutocomplete(inputEl, resultsEl) {
@@ -230,8 +236,41 @@ document.addEventListener('DOMContentLoaded', () => {
             const firstLogEntry = logEntriesContainer.firstChild;
             if (!firstLogEntry || firstLogEntry.textContent !== logMessage) {
                 const logEntry = document.createElement('p');
-                logEntry.textContent = logMessage;
-                logEntriesContainer.insertBefore(logEntry, logEntriesContainer.firstChild);
+                // Store raw data for editing
+                logEntry.dataset.date = date;
+                logEntry.dataset.code1 = code1;
+                logEntry.dataset.code2 = code2;
+                logEntry.dataset.distance = distance;
+
+                // Create span for text
+                const textSpan = document.createElement('span');
+                textSpan.textContent = logMessage;
+                textSpan.classList.add('log-entry-text'); // Add class for styling/selection
+
+                // Create Edit button
+                const editButton = document.createElement('button');
+                editButton.textContent = 'Edit';
+                editButton.classList.add('edit-log-btn'); // Add class for styling/selection
+                editButton.addEventListener('click', () => handleEditLogEntry(logEntry));
+
+                logEntry.appendChild(textSpan);
+                logEntry.appendChild(editButton);
+
+                // Find the correct insertion point based on date
+                const existingEntries = logEntriesContainer.querySelectorAll('p');
+                let inserted = false;
+                for (const existingEntry of existingEntries) {
+                    // Compare dates (YYYY-MM-DD format allows string comparison)
+                    if (logEntry.dataset.date < existingEntry.dataset.date) {
+                        logEntriesContainer.insertBefore(logEntry, existingEntry);
+                        inserted = true;
+                        break;
+                    }
+                }
+                // If not inserted (meaning it's the latest date or log is empty), append it
+                if (!inserted) {
+                    logEntriesContainer.appendChild(logEntry);
+                }
 
                 currentTotalMiles += Number(distance);
                 updateTotalsDisplay();
@@ -248,6 +287,53 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     // --- End Manual Trip Logging ---
+
+    // --- Edit Log Entry Logic ---
+    function handleEditLogEntry(logEntryElement) {
+        const { date: storedDateMMDDYY, code1, code2, distance: distanceStr } = logEntryElement.dataset;
+        const distance = Number(distanceStr);
+
+        if (isNaN(distance)) {
+            console.error("Invalid distance found in log entry dataset:", distanceStr);
+            return;
+        }
+
+        // 1. Subtract from totals
+        currentTotalMiles -= distance;
+        updateTotalsDisplay();
+
+        // 2. Remove the entry from the display
+        logEntryElement.remove();
+
+        // 3. Repopulate the form
+        // Convert MM/DD/YY back to YYYY-MM-DD for input
+        const dateParts = storedDateMMDDYY.split('/');
+        if (dateParts.length === 3) {
+            const year = parseInt(dateParts[2], 10) + 2000; // Assuming 21st century
+            const month = dateParts[0];
+            const day = dateParts[1];
+            dateInput.value = `${year}-${month}-${day}`;
+        } else {
+            console.warn("Could not parse date for editing:", storedDateMMDDYY);
+            // Optionally set to today or leave as is
+            dateInput.value = formatDateForInput(new Date());
+        }
+
+        // Find full names from codes
+        const site1Name = codeToSiteName[code1] || code1; // Fallback to code if name not found
+        const site2Name = codeToSiteName[code2] || code2; // Fallback to code if name not found
+
+        site1Input.value = site1Name;
+        site2Input.value = site2Name;
+
+        // 4. Trigger distance update for the repopulated fields
+        updateDistanceDisplay();
+
+        // Optional: Scroll to top or focus first input
+        site1Input.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    // --- End Edit Log Entry Logic ---
 
     // Add event listener to clear log button
     clearLogBtn.addEventListener('click', () => {
