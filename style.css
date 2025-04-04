@@ -218,6 +218,21 @@ button:active {
     background-color: var(--secondary-hover-color); /* Darker Very Light Gray */
     border-color: var(--secondary-hover-color);
 }
+ 
+/* Instructions Link Style */
+.instructions-link {
+    color: var(--primary-color); /* Use primary color for link */
+    text-decoration: underline;
+    font-size: 0.8rem; /* Match button font size */
+    cursor: pointer;
+    transition: color 0.15s ease-in-out;
+    margin: 0 5px; /* Add some horizontal spacing */
+    line-height: 1; /* Align vertically with buttons */
+}
+ 
+.instructions-link:hover {
+    color: var(--primary-hover-color); /* Darken on hover */
+}
 
 /* Swap Button - Outline style for light gray background */
 #swapBtn {

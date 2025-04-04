@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nextDayBtn = document.getElementById('nextDayBtn'); // Get the next day button
     const logTripBtn = document.getElementById('logTripBtn'); // Get the log trip button
     const copyLogBtn = document.getElementById('copyLogBtn'); // Get the copy log button
+    const instructionsLink = document.getElementById('instructionsLink'); // Get the instructions link
     // Mileage data with "KC Kids/ Learning Center" updated
     const mileageData = {
         "A.L. Conner": {"Alta": 8, "Citrus": 2, "District Op Ctr (DOC)": 12, "Dunlap/KCO Dunlap": 19, "ESC/SSC": 11, "Grant": 11, "Great Western": 10, "Jefferson": 11, "KCHS": 8, "KC Kids/ Learning Center": 11, "Lincoln": 11, "McCord": 1, "Mtn View": 10, "Navelencia": 9, "OCHS": 2, "RHS/KCO/Adult": 11, "Riverview": 13, "RMCHS": 10, "Sheridan": 1, "Silas Bartsch": 10, "T.L. Reed": 11, "Transportation": 11, "Washington": 11},
@@ -236,8 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const firstLogEntry = logEntriesContainer.firstChild;
             if (!firstLogEntry || firstLogEntry.textContent !== logMessage) {
                 const logEntry = document.createElement('p');
-                // Store raw data for editing
-                logEntry.dataset.date = date;
+                // Store raw data for editing - Use YYYY-MM-DD for sorting
+                const dateYYYYMMDD = formatDateForInput(new Date(dateInput.value + 'T00:00:00')); // Get YYYY-MM-DD
+                logEntry.dataset.date = dateYYYYMMDD; // Store YYYY-MM-DD
                 logEntry.dataset.code1 = code1;
                 logEntry.dataset.code2 = code2;
                 logEntry.dataset.distance = distance;
@@ -401,19 +403,21 @@ document.addEventListener('DOMContentLoaded', () => {
         let markdownString = "| Date     | Route       | Miles |\n";
         markdownString +=    "|----------|-------------|-------|\n";
 
-        // Iterate in reverse order to get chronological order (since entries are prepended)
-        const reversedEntries = Array.from(logEntries).reverse();
+        // Iterate directly as entries in the DOM are now sorted chronologically (YYYY-MM-DD)
 
-        reversedEntries.forEach(entry => {
+        logEntries.forEach(entry => {
             const textSpan = entry.querySelector('.log-entry-text'); // Find the span within the paragraph
             const text = textSpan ? textSpan.textContent : ''; // Get text only from the span
             // Example format: "04/03/25 - ALC-Alta - 8 miles"
-            const parts = text.split(' - ');
-            if (parts.length === 3) {
-                const date = parts[0].trim();
-                const route = parts[1].trim();
-                const miles = parts[2].replace(' miles', '').trim();
-                markdownString += `| ${date} | ${route} | ${miles} |\n`;
+            const dateYYYYMMDD = entry.dataset.date; // Get YYYY-MM-DD from dataset
+            const parts = text.split(' - '); // Still need route and miles from text
+            if (parts.length === 3 && dateYYYYMMDD) {
+                 // Reformat YYYY-MM-DD to MM/DD/YY for the table
+                 const dateParts = dateYYYYMMDD.split('-');
+                 const formattedDateMMDDYY = `${dateParts[1]}/${dateParts[2]}/${dateParts[0].slice(-2)}`;
+                 const route = parts[1].trim();
+                 const miles = parts[2].replace(' miles', '').trim();
+                 markdownString += `| ${formattedDateMMDDYY} | ${route} | ${miles} |\n`;
             } else {
                 console.warn("Could not parse log entry:", text);
             }
@@ -441,6 +445,62 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     });
     // --- End Copy Log as Markdown ---
+
+    // --- Instructions Link Logic ---
+    instructionsLink.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent the link from navigating
+
+        const instructions = `
+How to Paste Mileage Log into Google Docs:
+
+1. Click the "Copy Log (MD)" button. This copies your mileage log to the clipboard in Markdown format.
+
+2. Open your Google Doc.
+
+3. Enable Markdown detection (you only need to do this once):
+   - Go to the "Tools" menu.
+   - Select "Preferences".
+   - Check the box next to "Automatically detect Markdown".
+   - Click "OK".
+
+4. Paste the log:
+   - Place your cursor where you want the table in your Google Doc.
+   - Press Ctrl+V (or Cmd+V on Mac) to paste.
+
+Google Docs should automatically convert the pasted Markdown text into a formatted table.
+        `;
+
+        alert(instructions); // Display instructions in a simple popup
+    });
+    // --- End Instructions Link Logic ---
+
+    // --- Instructions Link Logic ---
+    instructionsLink.addEventListener('click', (event) => {
+        event.preventDefault(); // Prevent the link from navigating
+
+        const instructions = `
+How to Paste Mileage Log into Google Docs:
+
+1. Click the "Copy Log (MD)" button. This copies your mileage log to the clipboard in Markdown format.
+
+2. Open your Google Doc.
+
+3. Enable Markdown detection (you only need to do this once):
+   - Go to the "Tools" menu.
+   - Select "Preferences".
+   - Check the box next to "Automatically detect Markdown".
+   - Click "OK".
+
+4. Paste the log:
+   - Place your cursor where you want the table in your Google Doc.
+   - Press Ctrl+V (or Cmd+V on Mac) to paste.
+
+Google Docs should automatically convert the pasted Markdown text into a formatted table.
+        `;
+
+        alert(instructions); // Display instructions in a simple popup
+    });
+    // --- End Instructions Link Logic ---
 
 
 
