@@ -225,6 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add event listeners to trigger display update when input values change
     site1Input.addEventListener('change', updateDistanceDisplay);
     site2Input.addEventListener('change', updateDistanceDisplay);
+    dateInput.addEventListener('change', updateDistanceDisplay); // Add listener for date changes
     // --- End Automatic Distance Display Update ---
 
     // --- Manual Trip Logging ---
@@ -315,17 +316,15 @@ document.addEventListener('DOMContentLoaded', () => {
         logEntryElement.remove();
 
         // 3. Repopulate the form
-        // Convert MM/DD/YY back to YYYY-MM-DD for input
-        const dateParts = storedDateMMDDYY.split('/');
-        if (dateParts.length === 3) {
-            const year = parseInt(dateParts[2], 10) + 2000; // Assuming 21st century
-            const month = dateParts[0];
-            const day = dateParts[1];
-            dateInput.value = `${year}-${month}-${day}`;
+        // The stored date (originally named storedDateMMDDYY, but actually YYYY-MM-DD)
+        // can be directly used for the input field's value.
+        const storedDateYYYYMMDD = logEntryElement.dataset.date; // Correctly identify the format
+        if (storedDateYYYYMMDD && /^\d{4}-\d{2}-\d{2}$/.test(storedDateYYYYMMDD)) {
+             dateInput.value = storedDateYYYYMMDD; // Directly use the YYYY-MM-DD value
         } else {
-            console.warn("Could not parse date for editing:", storedDateMMDDYY);
-            // Optionally set to today or leave as is
-            dateInput.value = formatDateForInput(new Date());
+             console.warn("Invalid or missing date in dataset for editing:", storedDateYYYYMMDD);
+             // Optionally set to today or leave as is
+             dateInput.value = formatDateForInput(new Date());
         }
 
         // Find full names from codes
