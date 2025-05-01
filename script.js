@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logTrip() {
             if (this.currentLoggableTrip) {
                 const { date, code1, code2, distance } = this.currentLoggableTrip;
-                const logMessage = `${date} - ${code1}-${code2} - ${distance} miles`;
+                const logMessage = `${date} - ${code1}-${code2} - ${distance}`;
 
                 // Check for duplicates based on message content (simplest approach)
                 const existingMessages = Array.from(this.elements.logEntriesContainer.querySelectorAll('.log-entry-text'))
@@ -285,6 +285,21 @@ document.addEventListener('DOMContentLoaded', () => {
             textSpan.textContent = logMessage; // Uses MM/DD/YY from currentLoggableTrip
             textSpan.classList.add('log-entry-text');
 
+            // Add a Copy button for this entry
+            const copyButton = document.createElement('button');
+            copyButton.textContent = 'Copy';
+            copyButton.classList.add('copy-log-btn');
+            copyButton.addEventListener('click', () => {
+                const text = textSpan.textContent;
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        const originalText = copyButton.textContent;
+                        copyButton.textContent = 'Copied!';
+                        setTimeout(() => copyButton.textContent = originalText, 1500);
+                    })
+                    .catch(err => console.error('Failed to copy log entry:', err));
+            });
+
             const editButton = document.createElement('button');
             editButton.textContent = 'Edit';
             editButton.classList.add('edit-log-btn');
@@ -296,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             deleteButton.addEventListener('click', () => this.handleDeleteLogEntry(logEntry));
 
             logEntry.appendChild(textSpan);
+            logEntry.appendChild(copyButton);
             logEntry.appendChild(editButton);
             logEntry.appendChild(deleteButton);
 
@@ -337,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (newDateISO === null || !/^\d{4}-\d{2}-\d{2}$/.test(newDateISO)) {
                 // Cancelled or invalid date: restore original
                 const formattedDate = this.formatDate(new Date(storedDateISO));
-                const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance} miles`;
+                const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
                 this._insertLogEntrySorted(originalEntry);
                 return;
@@ -348,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newSite1 = prompt("Edit starting site:", site1Name);
             if (newSite1 === null) {
                 const formattedDate = this.formatDate(new Date(storedDateISO));
-                const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance} miles`;
+                const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
                 this._insertLogEntrySorted(originalEntry);
                 return;
@@ -359,7 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newSite2 = prompt("Edit destination site:", site2Name);
             if (newSite2 === null) {
                 const formattedDate = this.formatDate(new Date(storedDateISO));
-                const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance} miles`;
+                const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
                 this._insertLogEntrySorted(originalEntry);
                 return;
@@ -370,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newDistance = newDistanceStr !== null ? Number(newDistanceStr) : NaN;
             if (newDistanceStr === null || isNaN(newDistance)) {
                 const formattedDate = this.formatDate(new Date(storedDateISO));
-                const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance} miles`;
+                const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
                 this._insertLogEntrySorted(originalEntry);
                 return;
@@ -384,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const newCode1 = this.siteCodes[newSite1] || newSite1;
             const newCode2 = this.siteCodes[newSite2] || newSite2;
             const displayDate = this.formatDate(new Date(newDateISO));
-            const logMessage = `${displayDate} - ${newCode1}-${newCode2} - ${newDistance} miles`;
+            const logMessage = `${displayDate} - ${newCode1}-${newCode2} - ${newDistance}`;
             const newEntry = this._createLogEntryElement(displayDate, newCode1, newCode2, newDistance, logMessage);
             this._insertLogEntrySorted(newEntry);
         },
