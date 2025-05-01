@@ -21,6 +21,8 @@ document.addEventListener('DOMContentLoaded', () => {
             logTripBtn: null,
             copyLogBtn: null,
             instructionsLink: null,
+            revealCodeBtn: null,
+            codeRevealContainer: null,
         },
 
         // --- Data ---
@@ -91,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this.elements.logTripBtn = document.getElementById('logTripBtn');
             this.elements.copyLogBtn = document.getElementById('copyLogBtn');
             this.elements.instructionsLink = document.getElementById('instructionsLink');
+            this.elements.revealCodeBtn = document.getElementById('revealCodeBtn');
+            this.elements.codeRevealContainer = document.getElementById('codeRevealContainer');
         },
 
         _deriveData() {
@@ -125,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             this.elements.nextDayBtn.addEventListener('click', () => this.goToNextWeekday());
             this.elements.copyLogBtn.addEventListener('click', () => this.copyLogAsMarkdown());
             this.elements.instructionsLink.addEventListener('click', (e) => this.showInstructions(e));
+            this.elements.revealCodeBtn.addEventListener('click', () => this.handleRevealCode());
 
             // Global click listener for hiding autocomplete
             document.addEventListener('click', (event) => {
@@ -602,6 +607,33 @@ How to Paste Mileage Log into Google Docs:
 Google Docs should automatically convert the pasted Markdown text into a formatted table.
             `;
             alert(instructions);
+        },
+
+        handleRevealCode() {
+            const container = this.elements.codeRevealContainer;
+            if (container.style.display === 'none') {
+                container.innerHTML = '';
+                const codeSpan = document.createElement('span');
+                codeSpan.textContent = '52090096';
+                codeSpan.classList.add('reveal-code');
+                const copyBtn = document.createElement('button');
+                copyBtn.textContent = '📋';
+                copyBtn.classList.add('copy-code-btn');
+                copyBtn.addEventListener('click', () => {
+                    navigator.clipboard.writeText('52090096')
+                        .then(() => {
+                            const original = copyBtn.textContent;
+                            copyBtn.textContent = '✓';
+                            setTimeout(() => copyBtn.textContent = original, 1500);
+                        })
+                        .catch(err => console.error('Failed to copy code:', err));
+                });
+                container.appendChild(codeSpan);
+                container.appendChild(copyBtn);
+                container.style.display = 'flex';
+            } else {
+                container.style.display = 'none';
+            }
         }
     };
 
