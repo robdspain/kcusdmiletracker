@@ -141,7 +141,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formatDate(date) {
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
             const day = date.getDate().toString().padStart(2, '0');
-            const year = date.getFullYear().toString().slice(-2);
+            const year = date.getFullYear(); // 4-digit year
             return `${month}/${day}/${year}`;
         },
 
@@ -294,7 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
             copyButton.addEventListener('click', () => {
                 const fullText = textSpan.textContent;
                 const parts = fullText.split(' - ');
-                const textToCopy = parts.length >= 2 ? parts.slice(1).join(' - ') : fullText;
+                // Exclude date and use space instead of dash between route and miles
+                const textToCopy = parts.length >= 2 ? parts.slice(1).join(' ') : fullText;
                 navigator.clipboard.writeText(textToCopy)
                     .then(() => {
                         // Insert a green check mark before the entry (if not already added)
@@ -347,7 +348,6 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         handleEditLogEntry(logEntryElement) {
-            // Use native prompts for editing (can't be blocked)
             const { date: storedDateISO, code1, code2, distance: distanceStr } = logEntryElement.dataset;
             const originalDistance = Number(distanceStr);
             if (isNaN(originalDistance)) {
@@ -360,17 +360,35 @@ document.addEventListener('DOMContentLoaded', () => {
             this.updateTotalsDisplay();
             logEntryElement.remove();
 
-            // Prompt for new date
-            const newDateISO = prompt("Edit date (YYYY-MM-DD):", storedDateISO);
-            if (newDateISO === null || !/^\d{4}-\d{2}-\d{2}$/.test(newDateISO)) {
-                // Cancelled or invalid date: restore original
+            // Prompt for new date (US format MM/DD/YYYY)
+            const defaultDateUS = this.formatDate(new Date(storedDateISO));
+            const newDateUS = prompt("Edit date (MM/DD/YYYY):", defaultDateUS);
+            if (newDateUS === null) {
+                // Cancelled: restore original entry
                 const formattedDate = this.formatDate(new Date(storedDateISO));
                 const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
+                originalEntry.dataset.date = storedDateISO;
                 this._insertLogEntrySorted(originalEntry);
                 this.saveLog();
                 return;
             }
+            // Parse US date
+            const partsUS = newDateUS.split('/');
+            if (partsUS.length !== 3) {
+                alert('Invalid date format. Use MM/DD/YYYY.');
+                return;
+            }
+            const [mStr, dStr, yStr] = partsUS;
+            const mNum = parseInt(mStr, 10);
+            const dNum = parseInt(dStr, 10);
+            const yNum = parseInt(yStr, 10);
+            const dateObj = new Date(yNum, mNum - 1, dNum);
+            if (isNaN(dateObj) || dateObj.getMonth() + 1 !== mNum || dateObj.getDate() !== dNum || dateObj.getFullYear() !== yNum) {
+                alert('Invalid date.');
+                return;
+            }
+            const newDateISO = this.formatDateForInput(dateObj);
 
             // Prompt for starting site
             const site1Name = this.codeToSiteName[code1] || code1;
@@ -379,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formattedDate = this.formatDate(new Date(storedDateISO));
                 const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
+                originalEntry.dataset.date = storedDateISO;
                 this._insertLogEntrySorted(originalEntry);
                 this.saveLog();
                 return;
@@ -391,6 +410,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formattedDate = this.formatDate(new Date(storedDateISO));
                 const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
+                originalEntry.dataset.date = storedDateISO;
                 this._insertLogEntrySorted(originalEntry);
                 this.saveLog();
                 return;
@@ -403,6 +423,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formattedDate = this.formatDate(new Date(storedDateISO));
                 const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
+                originalEntry.dataset.date = storedDateISO;
                 this._insertLogEntrySorted(originalEntry);
                 this.saveLog();
                 return;
@@ -415,9 +436,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Prepare codes and display
             const newCode1 = this.siteCodes[newSite1] || newSite1;
             const newCode2 = this.siteCodes[newSite2] || newSite2;
-            const displayDate = this.formatDate(new Date(newDateISO));
+            const displayDate = this.formatDate(dateObj); // US format MM/DD/YYYY
             const logMessage = `${displayDate} - ${newCode1}-${newCode2} - ${newDistance}`;
             const newEntry = this._createLogEntryElement(displayDate, newCode1, newCode2, newDistance, logMessage);
+            // Override dataset DATE for sorting
+            newEntry.dataset.date = newDateISO;
             this._insertLogEntrySorted(newEntry);
             this.saveLog();
         },
