@@ -295,6 +295,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 const textToCopy = parts.length >= 2 ? parts.slice(1).join(' - ') : fullText;
                 navigator.clipboard.writeText(textToCopy)
                     .then(() => {
+                        // Insert a green check mark before the entry (if not already added)
+                        if (!logEntry.querySelector('.copy-indicator')) {
+                            const indicator = document.createElement('span');
+                            indicator.textContent = '✓ ';
+                            indicator.classList.add('copy-indicator');
+                            indicator.style.color = 'green';
+                            logEntry.insertBefore(indicator, textSpan);
+                        }
                         const originalText = copyButton.textContent;
                         copyButton.textContent = 'Copied!';
                         setTimeout(() => copyButton.textContent = originalText, 1500);
