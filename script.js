@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Add a Copy button for this entry
             const copyButton = document.createElement('button');
-            copyButton.textContent = 'Copy';
+            copyButton.textContent = '📋';
             copyButton.classList.add('copy-log-btn');
             copyButton.addEventListener('click', () => {
                 const fullText = textSpan.textContent;
