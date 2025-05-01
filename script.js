@@ -290,8 +290,10 @@ document.addEventListener('DOMContentLoaded', () => {
             copyButton.textContent = 'Copy';
             copyButton.classList.add('copy-log-btn');
             copyButton.addEventListener('click', () => {
-                const text = textSpan.textContent;
-                navigator.clipboard.writeText(text)
+                const fullText = textSpan.textContent;
+                const parts = fullText.split(' - ');
+                const textToCopy = parts.length >= 2 ? parts.slice(1).join(' - ') : fullText;
+                navigator.clipboard.writeText(textToCopy)
                     .then(() => {
                         const originalText = copyButton.textContent;
                         copyButton.textContent = 'Copied!';
