@@ -71,7 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
             this._deriveData();
             this._setupEventListeners();
             this._setInitialDate();
-            this.updateTotalsDisplay(); // Initial display
+            this.loadLog();
+            this.updateTotalsDisplay();
         },
 
         _selectElements() {
@@ -265,6 +266,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.currentTotalMiles += Number(distance);
                     this.updateTotalsDisplay();
                     this.currentLoggableTrip = null; // Prevent double logging
+                    this.saveLog();
                 } else {
                     console.log("Duplicate log entry prevented:", logMessage);
                 }
@@ -366,6 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
                 this._insertLogEntrySorted(originalEntry);
+                this.saveLog();
                 return;
             }
 
@@ -377,6 +380,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
                 this._insertLogEntrySorted(originalEntry);
+                this.saveLog();
                 return;
             }
 
@@ -388,6 +392,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
                 this._insertLogEntrySorted(originalEntry);
+                this.saveLog();
                 return;
             }
 
@@ -399,6 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance}`;
                 const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
                 this._insertLogEntrySorted(originalEntry);
+                this.saveLog();
                 return;
             }
 
@@ -413,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const logMessage = `${displayDate} - ${newCode1}-${newCode2} - ${newDistance}`;
             const newEntry = this._createLogEntryElement(displayDate, newCode1, newCode2, newDistance, logMessage);
             this._insertLogEntrySorted(newEntry);
+            this.saveLog();
         },
 
         handleDeleteLogEntry(logEntryElement) {
@@ -427,12 +434,14 @@ document.addEventListener('DOMContentLoaded', () => {
             this.currentTotalMiles -= distance;
             this.updateTotalsDisplay();
             logEntryElement.remove();
+            this.saveLog();
         },
 
         clearLog() {
             this.elements.logEntriesContainer.innerHTML = '';
             this.currentTotalMiles = 0.0;
             this.updateTotalsDisplay();
+            this.saveLog();
         },
 
         swapSites() {
@@ -525,6 +534,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.error('Failed to copy log to clipboard: ', err);
                     alert('Failed to copy log. See console for details.');
                 });
+        },
+
+        // Save current log entries to localStorage
+        saveLog() {
+            const entries = Array.from(this.elements.logEntriesContainer.querySelectorAll('p')).map(el => ({
+                date: el.dataset.date,
+                code1: el.dataset.code1,
+                code2: el.dataset.code2,
+                distance: el.dataset.distance
+            }));
+            localStorage.setItem('mileageLog', JSON.stringify(entries));
+        },
+
+        // Load saved log entries from localStorage
+        loadLog() {
+            const data = localStorage.getItem('mileageLog');
+            if (!data) return;
+            try {
+                const entries = JSON.parse(data);
+                entries.forEach(({ date, code1, code2, distance }) => {
+                    const displayDate = this.formatDate(new Date(date));
+                    const logMessage = `${displayDate} - ${code1}-${code2} - ${distance}`;
+                    const entryEl = this._createLogEntryElement(displayDate, code1, code2, distance, logMessage);
+                    this._insertLogEntrySorted(entryEl);
+                    this.currentTotalMiles += Number(distance);
+                });
+            } catch (e) {
+                console.error('Failed to load saved log:', e);
+            }
         },
 
         showInstructions(event) {
