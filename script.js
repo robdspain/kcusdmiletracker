@@ -327,32 +327,119 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 1. Subtract from totals
-            this.currentTotalMiles -= distance;
+            // Subtract old distance from totals
+            this.currentTotalMiles -= originalDistance;
             this.updateTotalsDisplay();
 
-            // 2. Remove the entry from the display
-            logEntryElement.remove();
+            // Clear current entry for inline editing
+            logEntryElement.innerHTML = '';
 
-            // 3. Repopulate the form
-            if (storedDateYYYYMMDD && /^\d{4}-\d{2}-\d{2}$/.test(storedDateYYYYMMDD)) {
-                 this.elements.dateInput.value = storedDateYYYYMMDD;
-            } else {
-                 console.warn("Invalid or missing date in dataset for editing:", storedDateYYYYMMDD);
-                 this.elements.dateInput.value = this.formatDateForInput(new Date());
-            }
+            // Create editable inputs
+            const dateInput = document.createElement('input');
+            dateInput.type = 'date';
+            dateInput.value = storedDateISO;
+            dateInput.classList.add('edit-date-input');
 
             const site1Name = this.codeToSiteName[code1] || code1;
             const site2Name = this.codeToSiteName[code2] || code2;
-            this.elements.site1Input.value = site1Name;
-            this.elements.site2Input.value = site2Name;
+            const site1Input = document.createElement('input');
+            site1Input.type = 'text';
+            site1Input.value = site1Name;
+            site1Input.classList.add('edit-site1-input');
 
-            // 4. Trigger distance update
-            this.updateDistanceDisplay();
+            const site2Input = document.createElement('input');
+            site2Input.type = 'text';
+            site2Input.value = site2Name;
+            site2Input.classList.add('edit-site2-input');
 
-            // Optional: Focus and scroll
-            this.elements.site1Input.focus();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const distanceInput = document.createElement('input');
+            distanceInput.type = 'number';
+            distanceInput.step = 'any';
+            distanceInput.value = originalDistance;
+            distanceInput.classList.add('edit-distance-input');
+
+            const saveButton = document.createElement('button');
+            saveButton.textContent = 'Save';
+            saveButton.classList.add('save-log-btn');
+            saveButton.addEventListener('click', () => this.handleSaveEditLogEntry(logEntryElement, { originalDistance }));
+
+            const cancelButton = document.createElement('button');
+            cancelButton.textContent = 'Cancel';
+            cancelButton.classList.add('cancel-log-btn');
+            cancelButton.addEventListener('click', () => this.handleCancelEditLogEntry(logEntryElement, { storedDateISO, code1, code2, originalDistance }));
+
+            // Append inputs and action buttons
+            logEntryElement.appendChild(dateInput);
+            logEntryElement.appendChild(site1Input);
+            logEntryElement.appendChild(site2Input);
+            logEntryElement.appendChild(distanceInput);
+            logEntryElement.appendChild(saveButton);
+            logEntryElement.appendChild(cancelButton);
+        },
+
+        handleSaveEditLogEntry(logEntryElement, { originalDistance }) {
+            const dateInput = logEntryElement.querySelector('.edit-date-input');
+            const site1Input = logEntryElement.querySelector('.edit-site1-input');
+            const site2Input = logEntryElement.querySelector('.edit-site2-input');
+            const distanceInput = logEntryElement.querySelector('.edit-distance-input');
+
+            const newDateISO = dateInput.value;
+            const newSite1Name = site1Input.value;
+            const newSite2Name = site2Input.value;
+            const newDistance = Number(distanceInput.value);
+
+            if (!newDateISO || isNaN(newDistance)) {
+                console.error("Invalid input for edited log entry.");
+                return;
+            }
+
+            // Add new distance to totals
+            this.currentTotalMiles += newDistance;
+            this.updateTotalsDisplay();
+
+            // Update dataset
+            logEntryElement.dataset.date = newDateISO;
+            const newCode1 = this.siteCodes[newSite1Name] || newSite1Name;
+            const newCode2 = this.siteCodes[newSite2Name] || newSite2Name;
+            logEntryElement.dataset.code1 = newCode1;
+            logEntryElement.dataset.code2 = newCode2;
+            logEntryElement.dataset.distance = newDistance;
+
+            // Rebuild entry display
+            logEntryElement.innerHTML = '';
+            const formattedDate = this.formatDate(new Date(newDateISO));
+            const logMessage = `${formattedDate} - ${newCode1}-${newCode2} - ${newDistance} miles`;
+            const textSpan = document.createElement('span');
+            textSpan.textContent = logMessage;
+            textSpan.classList.add('log-entry-text');
+
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.classList.add('edit-log-btn');
+            editButton.addEventListener('click', () => this.handleEditLogEntry(logEntryElement));
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.classList.add('delete-log-btn');
+            deleteButton.addEventListener('click', () => this.handleDeleteLogEntry(logEntryElement));
+
+            logEntryElement.appendChild(textSpan);
+            logEntryElement.appendChild(editButton);
+            logEntryElement.appendChild(deleteButton);
+
+            // Reposition entry
+            logEntryElement.remove();
+            this._insertLogEntrySorted(logEntryElement);
+        },
+
+        handleCancelEditLogEntry(logEntryElement, { storedDateISO, code1, code2, originalDistance }) {
+            // Remove the current editing entry
+            logEntryElement.remove();
+            // Restore original entry
+            const formattedDate = this.formatDate(new Date(storedDateISO));
+            const logMessage = `${formattedDate} - ${code1}-${code2} - ${originalDistance} miles`;
+            const originalEntry = this._createLogEntryElement(formattedDate, code1, code2, originalDistance, logMessage);
+            this._insertLogEntrySorted(originalEntry);
         },
 
         handleDeleteLogEntry(logEntryElement) {
