@@ -255,21 +255,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (this.currentLoggableTrip) {
                 const { date, code1, code2, distance } = this.currentLoggableTrip;
                 const logMessage = `${date} - ${code1}-${code2} - ${distance}`;
-
-                // Check for duplicates based on message content (simplest approach)
-                const existingMessages = Array.from(this.elements.logEntriesContainer.querySelectorAll('.log-entry-text'))
-                                             .map(span => span.textContent);
-                if (!existingMessages.includes(logMessage)) {
-                    const logEntry = this._createLogEntryElement(date, code1, code2, distance, logMessage);
-                    this._insertLogEntrySorted(logEntry);
-
-                    this.currentTotalMiles += Number(distance);
-                    this.updateTotalsDisplay();
-                    this.currentLoggableTrip = null; // Prevent double logging
-                    this.saveLog();
-                } else {
-                    console.log("Duplicate log entry prevented:", logMessage);
-                }
+                // Always allow duplicate entries
+                const logEntry = this._createLogEntryElement(date, code1, code2, distance, logMessage);
+                this._insertLogEntrySorted(logEntry);
+                this.currentTotalMiles += Number(distance);
+                this.updateTotalsDisplay();
+                this.currentLoggableTrip = null;
+                this.saveLog();
             } else {
                 console.log("Log Trip button clicked, but no valid trip data to log.");
             }
